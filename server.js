@@ -1,6 +1,9 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
 
+// connect to mongoDb
+require('./config/connection');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -10,12 +13,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Handlebars
-app.engine(
-  'handlebars',
-  exphbs({
-    defaultLayout: 'main',
-  }),
-);
+app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 
 // Routes
