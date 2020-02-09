@@ -1,4 +1,4 @@
-<a class="btn btn-primary" href="/news/f1/favorites" role="button">Favorites</a>
+<a class="btn btn-primary" href="/news/f1/favorites" role="button">Favorites<span class="badge badge-light">{{favCount}}</span></a>
 <div class="container">
   <div class="row">
     <div class="col-8 offset-2">
@@ -7,11 +7,12 @@
           <h2 class="card-title">Articles</h2>
           {{#each data}}
           <div>
-            <a href={{link}}>
-              <h3>{{title}}</h3>
-              <h6>{{content}}</h6>
+            <a href={{this.link}}>
+              <h3>{{this.title}}</h3>
+              <h6>{{this.content}}</h6>
             </a>
             <button class="btn btn-primary" data-link={{link}} inputtype="submit">Add as Favorite</button>
+            <button class="btn btn-primary" inputtype="submit">Comment</button>
             <hr my-3>
           </div>
           {{/each}}

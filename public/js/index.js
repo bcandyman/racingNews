@@ -5,7 +5,7 @@ $('button').click(function () {
     .find('a');
 
   const data = {
-    header: parentElmnt.find('H3').text(),
+    title: parentElmnt.find('H3').text(),
     content: parentElmnt.find('H6').text(),
     link: $(this).attr('data-link'),
   };

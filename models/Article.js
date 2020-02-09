@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 const ArticleSchema = new Schema({
-  header: {
+  title: {
     type: String,
     required: true,
   },
@@ -13,6 +13,7 @@ const ArticleSchema = new Schema({
   link: {
     type: String,
     required: true,
+    unique: true,
   },
 });
 
