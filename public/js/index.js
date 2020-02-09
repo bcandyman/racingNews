@@ -1,5 +1,5 @@
 
-$('button').click(function () {
+$('.save-article').click(function () {
   const parentElmnt = $(this)
     .parent()
     .find('a');
@@ -14,4 +14,8 @@ $('button').click(function () {
     type: 'POST',
     data,
   }).then(window.location.reload());
+});
+
+$('.view-comments').click(function () {
+  console.log(this);
 });

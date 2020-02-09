@@ -104,6 +104,8 @@ module.exports = (app) => {
 
   // Load F1 page
   app.get('/news/f1/favorites', (req, res) => {
+    console.log('here');
+    
     db.Article.find().lean().then((data) => {
       res.render('articles', { data });
     });
