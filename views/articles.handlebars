@@ -1,22 +1,28 @@
-<a class="btn btn-primary" href="/news/f1/favorites" role="button">Favorites<span
-    class="badge badge-light">{{favCount}}</span></a>
+{{> navbar}}
+
 <div class="container">
   <div class="row">
-    <div class="col-8 offset-2">
+    <div class="col-md-10 offset-md-1">
       <div class="card mt-4">
+        <div class="card-header">
+          <h2 class="card-title text-center">{{pageHeader}} Articles</h2>
+          {{!-- Featured --}}
+        </div>
         <div class="card-body">
-          <h2 class="card-title">Articles</h2>
           {{#each data}}
           <div>
             <a href={{this.link}}>
               <h3>{{this.title}}</h3>
               <h6>{{this.content}}</h6>
             </a>
-            <button class="btn btn-primary save-article" data-link={{link}} inputtype="submit">Add as Favorite</button>
-            <button class="btn btn-primary view-comments" data-toggle="modal" data-link={{link}} data-target="#exampleModal"
-            inputtype="submit">Comment</button>
+            <button class="btn save-article" data-link={{link}} inputtype="submit"><i
+                class="far fa-star fa-2x"></i></button>
             {{#if commented}}
-            <p>Has Comments</p>
+            <button class="btn view-comments" data-toggle="modal" data-link={{link}} data-target="#exampleModal"
+              inputtype="submit"><i class="commented far fa-comment fa-2x"></i></button>
+            {{else}}
+            <button class="btn view-comments" data-toggle="modal" data-link={{link}} data-target="#exampleModal"
+              inputtype="submit"><i class="far fa-comment fa-2x"></i></button>
             {{/if}}
             <hr my-3>
           </div>

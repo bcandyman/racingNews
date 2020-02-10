@@ -82,7 +82,7 @@ module.exports = (app) => {
       removeFavs(combinedData)
         .then((results2) => {
           hasComments(results2)
-            .then(res.render('articles', { data: results2, favCount: result[2] }));
+            .then(res.render('articles', { data: results2, favCount: result[2], pageHeader: 'All' }));
         });
     });
   });
@@ -95,7 +95,7 @@ module.exports = (app) => {
         .then((results2) => {
           hasComments(results2)
             .then(
-              res.render('articles', { data: results2, favCount: results[1] }),
+              res.render('articles', { data: results2, favCount: results[1], pageHeader: 'F1' }),
             );
         });
     });
@@ -108,17 +108,17 @@ module.exports = (app) => {
       removeFavs(data)
         .then((results2) => {
           hasComments(results2)
-            .then(res.render('articles', { data: results2, favCount: results[1] }));
+            .then(res.render('articles', { data: results2, favCount: results[1], pageHeader: 'MotoGP' }));
         });
     });
   });
 
   // Load favorites page
-  app.get('/news/f1/favorites', (req, res) => {
+  app.get('/news/all/favorites', (req, res) => {
     db.Article.find({ favorite: true }).lean()
       .then((results2) => {
         hasComments(results2)
-          .then(res.render('articles', { data: results2 }));
+          .then(res.render('articles', { data: results2, pageHeader: 'Favorite' }));
       });
   });
 
