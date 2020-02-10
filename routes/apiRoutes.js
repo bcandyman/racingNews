@@ -15,10 +15,17 @@ module.exports = (app) => {
 
   // Create a new example
   app.post('/api/article/comment/new', (req, res) => {
+
+    console.log(req.body);
+
+    
+
     db.Comment.create(req.body)
       .then((dbExample) => {
+        console.log(req.body.link);
+        
         return db.Article.findOneAndUpdate(
-          { _id: req.body.articleId },
+          { link: req.body.link },
           { $push: { comment: dbExample._id } },
           { new: true },
         );
@@ -42,13 +49,12 @@ module.exports = (app) => {
   });
 
   app.get('/api/article/comments', (req, res) => {
-    console.log(req.body.articleId);
-    db.Article.find({ _id: req.body.articleId })
+    db.Article.find({ link: req.query.link })
+      .lean()
       .populate('comment')
       .then((dbLibrary) => {
-        res.json(dbLibrary);
-      })
-      .catch((err) => {
+        res.send(dbLibrary[0]);
+      }).catch((err) => {
         res.json(err);
       });
   });

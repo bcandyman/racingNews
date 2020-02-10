@@ -57,6 +57,7 @@ module.exports = (app) => {
     });
   });
 
+  // Load all news articles
   app.get('/news/all', (req, res) => {
     const compare = (a, b) => {
       if (a.postingDate < b.postingDate) return 1;
@@ -73,22 +74,26 @@ module.exports = (app) => {
 
   // Load F1 page
   app.get('/news/f1', (req, res) => {
-    extractData('f1').then((data) => {
-      res.render('articles', data);
+    Promise.all([extractData('f1'), getFavCount()]).then((results) => {
+      const data = [...results[0].data];
+      removeFavs(data)
+        .then(res.render('articles', { data, favCount: results[1] }));
     });
   });
 
-  // Load F1 page
+  // Load favorites page
   app.get('/news/f1/favorites', (req, res) => {
     db.Article.find({ favorite: true }).lean().then((data) => {
       res.render('articles', { data });
     });
   });
 
-  // Load motoGp page
+  // Load MotoGp page
   app.get('/news/motogp', (req, res) => {
-    extractData('motogp').then((data) => {
-      res.render('articles', data);
+    Promise.all([extractData('motogp'), getFavCount()]).then((results) => {
+      const data = [...results[0].data];
+      removeFavs(data)
+        .then(res.render('articles', { data, favCount: results[1] }));
     });
   });
 
