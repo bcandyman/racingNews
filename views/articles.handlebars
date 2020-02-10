@@ -14,7 +14,10 @@
             </a>
             <button class="btn btn-primary save-article" data-link={{link}} inputtype="submit">Add as Favorite</button>
             <button class="btn btn-primary view-comments" data-toggle="modal" data-link={{link}} data-target="#exampleModal"
-              inputtype="submit">Comment</button>
+            inputtype="submit">Comment</button>
+            {{#if commented}}
+            <p>Has Comments</p>
+            {{/if}}
             <hr my-3>
           </div>
           {{/each}}

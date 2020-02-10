@@ -1,37 +1,44 @@
-let commentLinkHolder = '';
+const articlePlaceholder = { article: {} };
 
-$('.save-article').click(function() {
-  const parentElmnt = $(this)
-    .parent()
-    .find('a');
-
-  const data = {
-    title: parentElmnt.find('H3').text(),
-    content: parentElmnt.find('H6').text(),
-    link: $(this).attr('data-link'),
-    favorite: true,
-  };
+const saveArticleToDb = (title, content, link, favorite) => new Promise((resolve) => {
   $.ajax({
     url: '/api/article/favorite/save',
     type: 'POST',
-    data,
-  }).then(window.location.reload());
+    data: {
+      title,
+      content,
+      link,
+      favorite,
+    },
+  }).then((results) => {
+    resolve(results);
+  });
+});
+
+
+$('.save-article').click(function() {
+  const parentElmnt = $(this).parent().find('a');
+  const title = parentElmnt.find('H3').text();
+  const content = parentElmnt.find('H6').text();
+  const link = $(this).attr('data-link');
+  const favorite = true;
+
+  saveArticleToDb(title, content, link, favorite)
+    .then(window.location.reload());
 });
 
 $('.view-comments').click(function() {
-  console.log("asdfsf");
-  
-  const data = { link: $(this).attr('data-link') };
+  const parentElmnt = $(this).parent().find('a');
+  articlePlaceholder.article.title = parentElmnt.find('H3').text();
+  articlePlaceholder.article.content = parentElmnt.find('H6').text();
+  articlePlaceholder.article.link = $(this).attr('data-link');
+  articlePlaceholder.article.favorite = false;
+
   $.ajax({
     url: '/api/article/comments',
     type: 'GET',
-    data,
+    data: { link: articlePlaceholder.article.link },
   }).then((res) => {
-    // record article identity in case user creates a new comment
-    commentLinkHolder = res.link;
-    console.log(commentLinkHolder);
-    
-
     $('.existing-comments').empty();
 
     res.comment.forEach((element) => {
@@ -50,14 +57,20 @@ $('.view-comments').click(function() {
 });
 
 $('#submit-comment').click(() => {
-  const data = {
-    title: $('#comment-header').val(),
-    body: $('#comment-body').val(),
-    link: commentLinkHolder,
-  };
-  $.ajax({
-    url: '/api/article/comment/new',
-    type: 'POST',
-    data,
-  }).then(console.log('finished!'));
+  saveArticleToDb(articlePlaceholder.article.title,
+    articlePlaceholder.article.content,
+    articlePlaceholder.article.link,
+    articlePlaceholder.article.favorite)
+    .then(() => {
+      const data = {
+        title: $('#comment-header').val(),
+        body: $('#comment-body').val(),
+        link: articlePlaceholder.article.link,
+      };
+      $.ajax({
+        url: '/api/article/comment/new',
+        type: 'POST',
+        data,
+      }).then(console.log('finished!'));
+    });
 });

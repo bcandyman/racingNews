@@ -3,6 +3,18 @@ const axios = require('axios');
 const moment = require('moment');
 const db = require('../models');
 
+const hasComments = (rawData) => new Promise((resolve) => {
+  db.Article.find({ 'comment.0': { '$exists': true } }).lean().then((data) => {
+    const commented = data.map((el) => el.link);
+    rawData.forEach((element, index) => {
+      if (commented.includes(element.link)) {
+        rawData[index].commented = true;
+      }
+    });
+    resolve();
+  });
+});
+
 const removeFavs = (rawData) => new Promise((resolve) => {
   db.Article.find({ favorite: true }).lean().then((favs) => {
     const removeIndex = [];
@@ -10,7 +22,7 @@ const removeFavs = (rawData) => new Promise((resolve) => {
       removeIndex.push(rawData.map((item) => item.link).indexOf(element.link));
     });
     removeIndex.sort((a, b) => a - b).reverse();
-    removeIndex.forEach(element => {
+    removeIndex.forEach((element) => {
       rawData.splice(element, 1);
     });
     resolve(rawData);
@@ -68,7 +80,10 @@ module.exports = (app) => {
       const combinedData = [...result[0].data, ...result[1].data];
       combinedData.sort(compare);
       removeFavs(combinedData)
-        .then(res.render('articles', { data: combinedData, favCount: result[2] }));
+        .then((results2) => {
+          hasComments(results2)
+            .then(res.render('articles', { data: results2, favCount: result[2] }));
+        });
     });
   });
 
@@ -77,14 +92,12 @@ module.exports = (app) => {
     Promise.all([extractData('f1'), getFavCount()]).then((results) => {
       const data = [...results[0].data];
       removeFavs(data)
-        .then(res.render('articles', { data, favCount: results[1] }));
-    });
-  });
-
-  // Load favorites page
-  app.get('/news/f1/favorites', (req, res) => {
-    db.Article.find({ favorite: true }).lean().then((data) => {
-      res.render('articles', { data });
+        .then((results2) => {
+          hasComments(results2)
+            .then(
+              res.render('articles', { data: results2, favCount: results[1] }),
+            );
+        });
     });
   });
 
@@ -93,14 +106,20 @@ module.exports = (app) => {
     Promise.all([extractData('motogp'), getFavCount()]).then((results) => {
       const data = [...results[0].data];
       removeFavs(data)
-        .then(res.render('articles', { data, favCount: results[1] }));
+        .then((results2) => {
+          hasComments(results2)
+            .then(res.render('articles', { data: results2, favCount: results[1] }));
+        });
     });
   });
 
-  // Load example page and pass in an example by id
-  app.get('/example/:id', (req, res) => {
-    res.render('example', {
-    });
+  // Load favorites page
+  app.get('/news/f1/favorites', (req, res) => {
+    db.Article.find({ favorite: true }).lean()
+      .then((results2) => {
+        hasComments(results2)
+          .then(res.render('articles', { data: results2 }));
+      });
   });
 
   // Render 404 page for any unmatched routes
