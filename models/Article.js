@@ -21,6 +21,10 @@ const ArticleSchema = new Schema({
       ref: 'Comment',
     },
   ],
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Article = mongoose.model('Article', ArticleSchema);

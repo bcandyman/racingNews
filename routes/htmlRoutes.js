@@ -3,60 +3,49 @@ const axios = require('axios');
 const moment = require('moment');
 const db = require('../models');
 
-const parseFavs = (rawData) => new Promise((resolve) => {
-  const parsedData = {};
-  const favLinks = [];
-  db.Article.find().lean().then((favs) => {
-    for (let i = 0; i < favs.length; i += 1) {
-      favLinks.push(favs[i].link);
-    }
-    const data = rawData.filter((el) => {
-      if (!favLinks.includes(el.link)) {
-        return el;
-      }
+const removeFavs = (rawData) => new Promise((resolve) => {
+  db.Article.find({ favorite: true }).lean().then((favs) => {
+    const removeIndex = [];
+    favs.forEach((element) => {
+      removeIndex.push(rawData.map((item) => item.link).indexOf(element.link));
     });
-    parsedData.data = data;
-    parsedData.favCount = favLinks.length;
-    resolve(parsedData);
+    removeIndex.sort((a, b) => a - b).reverse();
+    removeIndex.forEach(element => {
+      rawData.splice(element, 1);
+    });
+    resolve(rawData);
   });
 });
 
-const getCrashData = (sport) => new Promise((resolve) => {
-  // define url root and end point
+const getFavCount = () => new Promise((resolve) => {
+  db.Article.find({ favorite: true }).lean().then((favs) => {
+    resolve(favs.length);
+  });
+});
+
+const extractData = (sport) => new Promise((resolve) => {
   const rootUrl = 'https://www.crash.net';
   const urlEndPoint = `/${sport}/news`;
 
-  // make axios call to get data
   axios.get(rootUrl + urlEndPoint).then((response) => {
-    // set variables
     const $ = cheerio.load(response.data);
-    const rawData = [];
+    const data = [];
 
-    // define data
     $('.region-content').find('.views-row').each((i, element) => {
-      const title = $(element).find('span').find('a').text();
-      const content = $(element).find('.views-field-field-body-teaser').text();
-      const date = $(element).find('.views-field-created').text();
-      let link = $(element).find('span').find('a').attr('href');
-      const postingDate = moment(date, 'MM/DD/YYYY - HH:mm').format('X');
+      const scrapedData = {
+        title: $(element).find('span').find('a').text(),
+        content: $(element).find('.views-field-field-body-teaser').text(),
+        date: $(element).find('.views-field-created').text(),
+        link: ($(element).find('span').find('a').attr('href')),
+        postingDate: moment($(element).find('.views-field-created').text(), 'MM/DD/YYYY - HH:mm').format('X'),
+      };
 
-      // if like does not include complete url, preppend root url
-      if (!link.includes('http')) {
-        link = rootUrl + link;
-      }
+      // if link does not include complete url, preppend root url
+      if (!scrapedData.link.includes('http')) scrapedData.link = rootUrl + scrapedData.link;
 
-      // push scraped information to data array
-      rawData.push({
-        content,
-        link,
-        title,
-        postingDate,
-      });
+      data.push(scrapedData);
     });
-
-    parseFavs(rawData).then((data) => {
-      resolve(data);
-    });
+    resolve({ data });
   });
 });
 
@@ -70,50 +59,35 @@ module.exports = (app) => {
 
   app.get('/news/all', (req, res) => {
     const compare = (a, b) => {
-      if (a.postingDate < b.postingDate) {
-        return 1;
-      }
-      if (a.postingDate > b.postingDate) {
-        return -1;
-      }
+      if (a.postingDate < b.postingDate) return 1;
+      if (a.postingDate > b.postingDate) return -1;
       return 0;
     };
-
-    Promise.all([getCrashData('f1'), getCrashData('motogp')]).then((result) => {
-
-      const combinedData = [];
-      result[0].data.forEach((element) => {
-        combinedData.push(element);
-      });
-      result[1].data.forEach((element) => {
-        combinedData.push(element);
-      });
-
+    Promise.all([extractData('f1'), extractData('motogp'), getFavCount()]).then((result) => {
+      const combinedData = [...result[0].data, ...result[1].data];
       combinedData.sort(compare);
-
-      res.render('articles', { data: combinedData, favCount: result[0].favCount });
+      removeFavs(combinedData)
+        .then(res.render('articles', { data: combinedData, favCount: result[2] }));
     });
   });
 
   // Load F1 page
   app.get('/news/f1', (req, res) => {
-    getCrashData('f1').then((data) => {
+    extractData('f1').then((data) => {
       res.render('articles', data);
     });
   });
 
   // Load F1 page
   app.get('/news/f1/favorites', (req, res) => {
-    console.log('here');
-    
-    db.Article.find().lean().then((data) => {
+    db.Article.find({ favorite: true }).lean().then((data) => {
       res.render('articles', { data });
     });
   });
 
   // Load motoGp page
   app.get('/news/motogp', (req, res) => {
-    getCrashData('motogp').then((data) => {
+    extractData('motogp').then((data) => {
       res.render('articles', data);
     });
   });
