@@ -9,6 +9,7 @@
     "prettier"
   ],
   "rules": {
+    "no-underscore-dangle": "warn",
     "no-duplicate-case": "error",
     "no-empty": "error",
     "no-extra-semi": "error",

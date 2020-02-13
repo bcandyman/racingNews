@@ -7,7 +7,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarText">
       <ul class="navbar-nav ml-auto">
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" href="/news/f1" class="sr-only">F1</a>
         </li>
         <li class="nav-item">
@@ -17,8 +17,10 @@
           <a class="nav-link" href="/news/all">All</a>
         </li>
         <div class="dropdown-divider"></div>
-        <a class="nav-link" href="/news/all/favorites">Favorites<i class="far fa-star fa-md"></i><span
-            class="badge badge-light">{{favCount}}</span></a>
+        <li>
+          <a class="nav-link" href="/news/all/favorites">Favorites<i class="far fa-star fa-md"></i><span
+              class="badge badge-light">{{favCount}}</span></a>
+        </li>
       </ul>
     </div>
   </div>

@@ -4,10 +4,11 @@ const moment = require('moment');
 const db = require('../models');
 
 const hasComments = (rawData) => new Promise((resolve) => {
-  db.Article.find({ 'comment.0': { '$exists': true } }).lean().then((data) => {
+  db.Article.find({ 'comment.0': { $exists: true } }).lean().then((data) => {
     const commented = data.map((el) => el.link);
     rawData.forEach((element, index) => {
       if (commented.includes(element.link)) {
+        // eslint-disable-next-line no-param-reassign
         rawData[index].commented = true;
       }
     });
