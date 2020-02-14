@@ -1,67 +1,53 @@
 /* eslint-disable no-underscore-dangle */
+const cheerio = require('cheerio');
+const axios = require('axios');
 const db = require('../models');
 
+
+const extractWebData = (sport) => new Promise((resolve) => {
+  const rootUrl = 'https://www.crash.net';
+  const urlEndPoint = `/${sport}/news`;
+
+  axios.get(rootUrl + urlEndPoint).then((response) => {
+    const $ = cheerio.load(response.data);
+    const data = [];
+
+    $('.region-content').find('.views-row').each((i, element) => {
+      const scrapedData = {
+        title: $(element).find('span').find('a').text(),
+        content: $(element).find('.views-field-field-body-teaser').text(),
+        date: $(element).find('.views-field-created').text(),
+        link: ($(element).find('span').find('a').attr('href')),
+      };
+
+      // if link does not include complete url, preppend root url
+      if (!scrapedData.link.includes('http')) scrapedData.link = rootUrl + scrapedData.link;
+
+      data.push(scrapedData);
+    });
+    resolve(data);
+  });
+});
+
+const clearDb = () => new Promise((resolve) => {
+  db.Article.remove({}).then(resolve())
+});
+
+const saveArticleToDB = (articles) => new Promise((resolve, reject) => {
+  db.Article.create(articles)
+    .then(resolve())
+    .catch(err => reject(err));
+})
+
 module.exports = (app) => {
-  // Create a new comment
-  app.post('/api/article/comment/new', (req, res) => {
-    // console.log(req.body);
 
-    db.Comment.create(req.body)
-      .then((dbExample) => {
-        console.log('.then');
-        console.log(dbExample);
-        console.log(req.body.link);
-        
-        db.Article.findOneAndUpdate(
-          { link: req.body.link },
-          { $push: { comment: dbExample._id } },
-          { favorite: false },
-        );
-      })
-      .then((dbArticle) => {
-        res.json(dbArticle);
-      })
-      .catch((err) => res.send(err.message));
+  //scrape webpage and save information to mongodb
+  app.get('/api/scrape', (req, res) => {
+    clearDb()
+      .then(extractWebData('motogp').then(extractedData => {
+        saveArticleToDB(extractedData)
+          .then(res.sendStatus(200))
+      }),
+      );
   });
-
-  // Create a new favorite article
-  app.post('/api/article/favorite/save', (req, res) => {
-    db.Article.create(req.body)
-      .then((dbExample) => res.send(dbExample))
-      .catch((err) => res.send(err.message));
-  });
-
-  // Get article comments
-  app.get('/api/article/comments', (req, res) => {
-    db.Article.find(req.query)
-      .lean()
-      .populate('comment')
-      .then((dbLibrary) => {
-        res.send(dbLibrary[0]);
-      })
-      .catch((err) => {
-        res.json(err);
-      });
-  });
-
-  // app.delete('/api/article/comment/delete', (req, res) => {
-  //   db.Comment.findOneAndRemove({ comment: req.body }, (err, result) => {
-  //     if (err) {
-  //       console.log(err);
-  //     }
-
-  //     const commentId = result._id;
-
-
-  //     db.Article.updateOne({ _id: articleId }, { $pullAll: { comment: [commentId] } })
-
-
-  //     // db.Comment.findByIdAndDelete(req.body).exec((err, removed) => {
-  //     //   if (err) {
-  //     //     console.log(err);
-  //     //   }
-  //     //   res.send(removed);
-  //     // });
-  //   });
-  // });
 };

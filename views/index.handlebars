@@ -1,8 +1,81 @@
-<div id="home">
-  <div class="container">
-    <h1>Index</h1>
-    <a class="btn btn-primary" href="/news/f1" role="button">F1</a>
-    <a class="btn btn-primary" href="/news/motogp" role="button">MotoGp</a>
-    <a class="btn btn-primary" href="/news/all" role="button">All</a>
+{{> navbar}}
+
+{{log}}
+
+<button class="btn btn-primary" id="scrape-data">Scrape</button>
+
+<div class="container py-4">
+  <div class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="card mt-4">
+        <div class="card-header">
+          <h2 class="card-title text-center">{{pageHeader}} Articles</h2>
+          {{!-- Featured --}}
+        </div>
+        <div class="card-body">
+          {{#each data}}
+          <div class="article-parent">
+            <div class="row">
+              <div class="col-12 article-parent">
+                <a href={{this.link}}>
+                  <h3>{{this.title}}</h3>
+                  <h6>{{this.content}}</h6>
+                </a>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <button class="btn save-article" data-link={{link}} inputtype="submit"><i
+                    class="far fa-star fa-2x"></i></button>
+                {{#if commented}}
+                <button class="btn view-comments" data-toggle="modal" data-link={{link}} data-target="#exampleModal"
+                  inputtype="submit"><i class="commented far fa-comment fa-2x"></i></button>
+                {{else}}
+                <button class="btn view-comments" data-toggle="modal" data-link={{link}} data-target="#exampleModal"
+                  inputtype="submit"><i class="far fa-comment fa-2x"></i></button>
+                {{/if}}
+              </div>
+            </div>
+            <hr my-3>
+          </div>
+          {{/each}}
+          <a href="/">← Back To Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{!-- Modal --}}
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Comments</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-body existing-comments">
+        </div>
+        <hr>
+        <form>
+          <div class="form-group">
+            <label for="comment-header" class="col-form-label">Comment Header:</label>
+            <input type="text" class="form-control" id="comment-header">
+          </div>
+          <div class="form-group">
+            <label for="comment-body" class="col-form-label">Comment Body:</label>
+            <textarea class="form-control" id="comment-body"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="submit-comment">Submit Comment</button>
+      </div>
+    </div>
   </div>
 </div>
