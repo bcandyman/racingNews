@@ -21,10 +21,9 @@ const ArticleSchema = new Schema({
       ref: 'Comment',
     },
   ],
-  // favorite: {
-  //   type: Boolean,
-  //   default: false,
-  // },
+  postingDate: {
+    type: String,
+  },
 });
 
 const Article = mongoose.model('Article', ArticleSchema);
